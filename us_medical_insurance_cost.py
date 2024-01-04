@@ -1,176 +1,114 @@
 import pandas as pd
 
+def calculate_average(data, column):
+    total = sum(row[column] for row in data)
+    return total / len(data)
+
 
 #Creating dataframe from csv file and converting to a dictionary using records orientation
 file_path= 'insurance.csv'
 df = pd.read_csv(file_path)
 data_dict = df.to_dict(orient='records')
 
-num_of_patients = len(data_dict)
-
 #Insights on costs
-total_cost= 0
 
-##Calculate total cost
-for data in data_dict:
-    # Ensure 'charges' key exists and convert it to float
-    if 'charges' in data:
-        charges_value = float(data['charges'])
-        total_cost += charges_value
-
-##Average insurance charges
-avg_charges = total_cost / num_of_patients
-
+#Average charges
+avg_charges = calculate_average(data_dict, "charges")
 
 ##Average charge per region
 
-###Northeast
-total_northeast = 0
-num_northeast_patients = 0
-for data in data_dict:
-    if data['region'] == 'northeast':
-        total_northeast = data['charges'] + total_northeast
-        num_northeast_patients += 1
-
-avg_charges_northeast = total_northeast / num_northeast_patients
-
-###Northwest
-total_northwest = 0
-num_northwest_patients = 0
-for data in data_dict:
-    if data['region'] == 'northwest':
-        total_northwest = data['charges'] + total_northwest
-        num_northwest_patients += 1
-
-avg_charges_northwest = total_northwest / num_northwest_patients
-
-###Southeast
-total_southeast = 0
-num_southeast_patients = 0
-for data in data_dict:
-    if data['region'] == 'southeast':
-        total_southeast = data['charges'] + total_southeast
-        num_southeast_patients += 1
-
-avg_charges_southeast = total_southeast / num_southeast_patients
-
-###Southwest
-total_southeast = 0
-num_southwest_patients = 0
-for data in data_dict:
-    if data['region'] == 'southeast':
-        total_southeast = data['charges'] + total_southeast
-        num_southwest_patients += 1
-
-avg_charges_southwest = total_southeast / num_southwest_patients
+avg_charges_per_region = df.groupby('region')['charges'].mean().reset_index() #Average charges per region dataframe
+avg_charges_northeast = avg_charges_per_region["charges"][0] #Northeast
+avg_charges_northwest = avg_charges_per_region["charges"][1] #Northwest
+avg_charges_southeast = avg_charges_per_region["charges"][2] #Southeast
+avg_charges_southwest = avg_charges_per_region["charges"][3] #Southwest
 
 ##Average charges of smokers
 
-total_smokers = 0
-num_smoker_patients = 0
-for data in data_dict:
-    if data['smoker']=='yes':
-        total_smokers = data['charges'] + total_smokers
-        num_smoker_patients += 1
+df_smokers = df[df["smoker"]=="yes"] #Create a dataframe for smokers information
+df_dict_smokers = df_smokers.to_dict(orient='records') #Convert dataframe to dictionairy
+avg_charges_smokers = calculate_average(df_dict_smokers, "charges") #Average charge of smokers
 
-avg_charges_smokers = total_smokers/num_smoker_patients
+##Average charges of each gender
 
-##Average charges of each sex
+df_male = df[df["sex"] == "male"] #Create a dataframe for male 
+df_female = df[df["sex"] == "female"] #Create a dataframe for male
+df_dict_male = df_male.to_dict(orient="records") #Convert male dataframe to dictionairy
+df_dict_female = df_female.to_dict(orient="records") #Convert female dataframe to dictionairy
 
-total_men = 0
-num_men_patients = 0
-total_woman = 0
-num_woman_patients = 0
-for data in data_dict:
-    if data['sex'] == 'male':
-        total_men = data['charges'] + total_men
-        num_men_patients += 1
-    elif data['sex'] == 'female':
-        total_woman = data['charges'] + total_woman
-        num_woman_patients += 1
+avg_charges_male = calculate_average(df_dict_male, "charges") #Average charges for males
+avg_charges_female = calculate_average(df_dict_female, "charges") #Average charges for females
 
-avg_charges_men = total_men / num_men_patients
-avg_charges_woman = total_woman / num_woman_patients
+##Average charges of parents
+
+df_parents = df[df["children"] > 0]
+df_dict_parents = df_parents.to_dict(orient ="records")
+avg_charge_parents = calculate_average(df_dict_parents, "charges")
+
 
 #Insights on age
 
 ##Average age of smokers
 
-total_age_smokers = 0
-for data in data_dict:
-    if data['smoker']=='yes':
-        total_age_smokers = total_age_smokers + data['age']
-        
-avg_age_smokers = total_age_smokers / num_smoker_patients
+avg_age_smokers = calculate_average(df_dict_smokers, "age")
 
 ##Average age of parents
 
-total_age_parents = 0
-num_parents_patients = 0
-for data in data_dict:
-    if data['children']> 0:
-        total_age_parents = total_age_parents + data['age']
-        num_parents_patients += 1
-
-avg_parents_age = total_age_parents/num_parents_patients
+avg_age_parents = calculate_average(df_dict_parents, "age")
 
 ##Average age per region
 
-###Northeast
-total_age_northeast = 0
-for data in data_dict:
-    if data['region'] == 'northeast':
-        total_age_northeast = total_age_northeast + data['age']
-
-avg_age_northeast = total_age_northeast / num_northeast_patients
-
-###Northwest
-total_age_northwest = 0
-for data in data_dict:
-    if data['region'] == 'northwest':
-        total_age_northwest = total_age_northwest + data['age']
-
-avg_age_northwest = total_age_northwest / num_northwest_patients
-
-###Southeast
-total_age_southeast = 0
-for data in data_dict:
-    if data['region'] == 'southeast':
-        total_age_southeast = total_age_southeast + data['age']
-
-avg_age_southeast = total_age_southeast / num_southeast_patients
-
-###Southwest
-total_age_southwest = 0
-for data in data_dict:
-    if data['region'] == 'southwest':
-        total_age_southwest = total_age_southwest + data['age']
-
-avg_age_southwest = total_age_southwest / num_southwest_patients
+avg_age_per_region = df.groupby('region')["age"].mean().reset_index() #Average charges per region dataframe
+avg_age_northeast = avg_age_per_region["age"][0] #Northeast
+avg_age_northwest = avg_age_per_region["age"][1] #Northwest
+avg_age_southeast = avg_age_per_region["age"][2] #Southeast
+avg_age_southwest = avg_age_per_region["age"][3] #Southwest
 
 
 #Insights on gender
 
 ##Counting each gender individuals
-females = 0
-males = 0
-for data in data_dict:
-    if data['sex'] == 'female':
-        females +=1
-    elif data['sex'] == 'male':
-        males += 1
+males = len(df_dict_male)
+females = len(df_dict_female)
 
 ##Countig smokers for each gender
-num_female_smokers = 0
-num_male_smokers = 0
-for data in data_dict:
-    if data['sex'] == 'female' and data['smoker'] == 'yes':
-        num_female_smokers += 1
-    elif data['sex'] == 'male' and data['smoker'] == 'yes':
-        num_male_smokers += 1
 
-perc_male_smokers = num_male_smokers *100 / num_smoker_patients
-perc_female_smokers = num_female_smokers*100/num_smoker_patients
+num_male_smokers = len(df_male['smoker'] == 'yes')
+num_female_smokers = len(df_female['smoker'] == 'yes')
+
+#Important Conslusions
+
+def calculate_difference(value, average):
+    if value>=average:
+        perc = value*100/average -100
+        diff = value - average
+        return perc, diff
+    else:
+        perc = 100-value*100/average
+        diff = average - value
+        return perc, diff
+
+perc_smokers, smokers_diff = calculate_difference(avg_charges_smokers, avg_charges)
+print("Smokers pay on average " + f"{round(perc_smokers, 2)}%" + f" or {round(smokers_diff, 2)}$ more than non-smokers.")
+
+perc_gender, gender_diff = calculate_difference(avg_charges_male, avg_charges_female)
+print("Males pay "+f"{round(perc_gender)}%" + f" or {round(gender_diff)}$ more than females.")
+
+perc_northeast, diff_northeast = calculate_difference(avg_charges_northeast, avg_charges)
+print("Northeast inhabitants pay "+f"{round(perc_northeast, 2)}%" + f" or {round(diff_northeast)}$ above the avarage.")
+
+perc_northwest, diff_northwest = calculate_difference(avg_charges_northwest, avg_charges)
+print("Northwest inhabitants pay "+f"{round(perc_northwest, 2)}%" + f" or {round(diff_northwest)}$ under the avarage.")
+
+perc_southeast, diff_southeast = calculate_difference(avg_charges_southeast, avg_charges)
+print("Southeast inhabitants pay "+f"{round(perc_southeast, 2)}%" + f" or {round(diff_southeast)}$ above the avarage.")
+
+perc_southwest, diff_southwest = calculate_difference(avg_charges_southwest, avg_charges)
+print("Southwest inhabitants pay "+f"{round(perc_southwest, 2)}%" + f" or {round(diff_southwest)}$ under the avarage.")
+
+
+
+
 
 
                                     
